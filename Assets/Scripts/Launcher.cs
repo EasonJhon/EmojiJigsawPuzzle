@@ -1,0 +1,19 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class Launcher : MonoBehaviour
+{
+    // Start is called before the first frame update
+    void Start()
+    {
+        StartCoroutine(Enter());
+    }
+    
+    IEnumerator Enter()
+    {
+        yield return new WaitForSeconds(2);
+        SceneManager.LoadSceneAsync("Main");
+    }
+}
