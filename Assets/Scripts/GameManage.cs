@@ -8,6 +8,9 @@ public class GameManage : MonoBehaviour
 
     public Emotion TargetEmo;
 
+    public Sprite DefaultEyeBrow;
+    public Sprite DefaultEye;
+    public Sprite DefaultMouth;
     public EmotionInfo[] TasksSprites;
     public EmotionInfo[] EyeBrowSprites;
     public EmotionInfo[] EyeSprites;
@@ -17,6 +20,8 @@ public class GameManage : MonoBehaviour
     private MainPanel mainPanel;
     [SerializeField]
     private NoticePanel noticePanel;
+    [SerializeField]
+    private GameOverPanel gameOverPanel;
     public void Awake()
     {
         if (mainPanel == null)
@@ -27,14 +32,23 @@ public class GameManage : MonoBehaviour
         {
             noticePanel = GetComponentInChildren<NoticePanel>(true);
         }
+        if (gameOverPanel == null)
+        {
+            gameOverPanel = GetComponentInChildren<GameOverPanel>(true);
+        }
         if (mainPanel != null)
         {
             mainPanel.Init();
             mainPanel.OnPartImgClick.AddListener(OnPartImgClick);
+            mainPanel.OnTimeOut.AddListener(onTimeOut);
         }
         if (noticePanel != null)
         {
             noticePanel.Init();
+        }
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.Init();
         }
         CurInfo.IsEnd = onEnd;
         randomTatget();
@@ -82,11 +96,26 @@ public class GameManage : MonoBehaviour
     {
         mainPanel.SetActive(true);
     }
+    public void Restart()
+    {
+        noticePanel.SetActive(true, null, getTask(TargetEmo));
+        gameOverPanel.SetActive(false);
+    }
+    public void Exit()
+    {
+        Application.Quit();
+    }
     private void onEnd()
     {
         randomTatget();
         mainPanel.SetActive(false);
-        noticePanel.SetActive(true);
+        gameOverPanel.SetActive(true, true);
+    }
+    private void onTimeOut()
+    {
+        randomTatget();
+        mainPanel.SetActive(false);
+        gameOverPanel.SetActive(true, false);
     }
 
     private void randomTatget()
@@ -95,6 +124,9 @@ public class GameManage : MonoBehaviour
         TargetEmo = (Emotion)random;
         CurInfo.Restart(TargetEmo);
         mainPanel.SwitchPart(Part.EyeBrow, EyeBrowSprites);
+        mainPanel.SetEyeBrow(DefaultEyeBrow);
+        mainPanel.SetEye(DefaultEye);
+        mainPanel.SetMouth(DefaultMouth);
     }
 
     private Sprite getTask(Emotion emotion)
@@ -126,7 +158,7 @@ public class FaceInfo
         {
             m_eyeBrow = value;
             m_eyeBrowChanged = true;
-            if (isChanged())
+            if (isChanged() && IsRight())
             {
                 IsEnd?.Invoke();
             }
@@ -142,7 +174,7 @@ public class FaceInfo
         {
             m_eye = value;
             m_eyeChanged = true;
-            if (isChanged())
+            if (isChanged() && IsRight())
             {
                 IsEnd?.Invoke();
             }
@@ -158,7 +190,7 @@ public class FaceInfo
         {
             m_mouth = value;
             m_mouthChanged = true;
-            if (isChanged())
+            if (isChanged() && IsRight())
             {
                 IsEnd?.Invoke();
             }

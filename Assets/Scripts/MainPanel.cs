@@ -10,16 +10,40 @@ public class MainPanel : MonoBehaviour
     public Image EyeImg;
     public Image MouthImg;
 
+    public Image TimeImg;
+    public Text TimeTxt;
+    public float TimeOut = 60f;
+
     public PartEvent OnPartImgClick = new PartEvent();
+    public UnityEvent OnTimeOut = new UnityEvent();
     public class PartEvent : UnityEvent<Part, Emotion> { }
 
     public Part CurPart = Part.EyeBrow;
     public Dictionary<Emotion, Button> PartImgs = new Dictionary<Emotion, Button>();
 
     public bool IsInit;
+    public bool IsStart;
+    private float _timeOut;
     public void Start()
     {
         Init();
+    }
+
+    private void Update()
+    {
+        if (IsStart)
+        {
+            _timeOut -= Time.deltaTime;
+            if (TimeTxt != null)
+            {
+                TimeTxt.text = _timeOut.ToString("F0") + "√Î";
+            }
+            if (_timeOut <= 0)
+            {
+                IsStart = false;
+                OnTimeOut?.Invoke();
+            }
+        }
     }
 
     public void Init()
@@ -58,7 +82,11 @@ public class MainPanel : MonoBehaviour
 
     public void SetActive(bool active)
     {
+        IsStart = active;
         gameObject.SetActive(active);
+        TimeImg.gameObject.SetActive(!active);
+        TimeTxt.gameObject.SetActive(active);
+        _timeOut = TimeOut;
     }
     public void SetEyeBrow(Sprite sprite)
     {
@@ -111,13 +139,23 @@ public class MainPanel : MonoBehaviour
     {
         if (emotions != null)
         {
+            int random = Random.Range(1, 6);
+            Vector2 start = PartImgs[(Emotion)random].GetComponent<RectTransform>().anchoredPosition;
             for (int i = 0; i < emotions.Length; i++)
             {
                 if (PartImgs.ContainsKey(emotions[i].Type))
                 {
+                    RectTransform rect = PartImgs[emotions[i].Type].GetComponent<RectTransform>();
+                    rect.anchoredPosition = start;
+                    start.x += 200;
+                    if (start.x > 400)
+                    {
+                        start.x = -400f;
+                    }
                     Image image = PartImgs[emotions[i].Type].transform.GetChild(0).GetComponent<Image>();
                     image.sprite = emotions[i].TargetSprite;
                     image.SetImgBySpriteSize(0.25f);
+
                 }
             }
         }

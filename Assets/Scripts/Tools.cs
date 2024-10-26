@@ -11,7 +11,7 @@ public static class Tools
         if (image.sprite != null)
         {
             Vector2 size = image.sprite.rect.size;
-            Debug.Log(" Target Img Sprite Size : " + size);
+            //Debug.Log(" Target Img Sprite Size : " + size);
             size *= multiples;
             image.rectTransform.sizeDelta = size;
         }
